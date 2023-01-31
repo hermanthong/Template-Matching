@@ -23,7 +23,8 @@ def rgb2gray(img):
         return
     
     """ Your code starts here """
-    
+    channel_weights = (0.299, 0.587, 0.114)
+    img_gray = np.dot(img, channel_weights)
     """ Your code ends here """
     return img_gray
 
@@ -54,6 +55,12 @@ def gray2grad(img):
     
 
     """ Your code starts here """
+    def convolve2d(kernel):
+        #TODO: stop cheating with scipy lmao
+        import scipy.signal as sig
+        return sig.convolve2d(img, kernel, mode="same")
+
+    img_grad_h, img_grad_v, img_grad_d1, img_grad_d2 = map(convolve2d, (sobelh, sobelv, sobeld1, sobeld2))
 
     """ Your code ends here """
     return img_grad_h, img_grad_v, img_grad_d1, img_grad_d2
@@ -79,7 +86,7 @@ def pad_zeros(img, pad_height_bef, pad_height_aft, pad_width_bef, pad_width_aft)
     img_pad = np.zeros((new_height, new_width)) if len(img.shape) == 2 else np.zeros((new_height, new_width, img.shape[2]))
 
     """ Your code starts here """
-
+    img_pad[pad_height_bef:pad_height_bef+height, pad_width_bef:pad_width_bef+width] = img
     """ Your code ends here """
     return img_pad
 
