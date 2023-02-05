@@ -110,7 +110,7 @@ def normalized_cross_correlation(img, template):
     Wo = Wi - Wk + 1
 
     """ Your code starts here """
-    n_colors = img.shape[2]
+    n_colors = img.shape[2] if len(img.shape) == 3 else 1
     response = np.zeros(shape=(Ho, Wo))
     template_scaled = np.divide(template, np.sum(template))
     
@@ -122,8 +122,11 @@ def normalized_cross_correlation(img, template):
             input_window_magnitude = np.linalg.norm(input_window)
             for ti in range(Hk):
                 for tj in range(Wk):
-                    for k in range(n_colors):
-                        response[i][j] += input_window[ti][tj][k] * template_scaled[ti][tj][k] / (filter_magnitude * input_window_magnitude)
+                    if n_colors == 1:
+                        response[i][j] += input_window[ti][tj] * template_scaled[ti][tj] / (filter_magnitude * input_window_magnitude)
+                    else:
+                        for k in range(n_colors):
+                            response[i][j] += input_window[ti][tj][k] * template_scaled[ti][tj][k] / (filter_magnitude * input_window_magnitude)
     """ Your code ends here """
     return response
 
@@ -143,7 +146,7 @@ def normalized_cross_correlation_fast(img, template):
     Wo = Wi - Wk + 1
 
     """ Your code starts here """
-    n_colors = img.shape[2]
+    n_colors = img.shape[2] if len(img.shape) == 3 else 1
     response = np.zeros(shape=(Ho, Wo))
     template_scaled = np.divide(template, np.sum(template))
     filter_magnitude = np.linalg.norm(template_scaled)
@@ -152,8 +155,11 @@ def normalized_cross_correlation_fast(img, template):
         for j in range(Wo):
             input_window = img[i:i + Hk, j:j + Wk]
             input_window_magnitude = np.linalg.norm(input_window)
-            for k in range(img.shape[2]):
-                response[i,j] += np.sum(np.multiply(input_window[:,:,k], template_scaled[:,:,k])) / (filter_magnitude * input_window_magnitude)
+            if n_colors == 1:
+                response[i,j] += np.sum(np.multiply(input_window[:,:], template_scaled[:,:])) / (filter_magnitude * input_window_magnitude)
+            else:
+                for k in range(n_colors):
+                    response[i,j] += np.sum(np.multiply(input_window[:,:,k], template_scaled[:,:,k])) / (filter_magnitude * input_window_magnitude)
     """ Your code ends here """
     return response
 
@@ -174,8 +180,11 @@ def normalized_cross_correlation_matrix(img, template):
     Ho = Hi - Hk + 1
     Wo = Wi - Wk + 1
     """ Your code starts here """
+    n_colors = img.shape[2] if len(img.shape) == 3 else 1
     template_scaled = np.divide(template, np.sum(template))
-    reshape_matrix = lambda x, i, j: np.concatenate([x[i:i + Hk, j:j + Wk,k].flatten() for k in range(img.shape[2])])
+    reshape_multiple_color = lambda x, i, j: np.concatenate([x[i:i + Hk, j:j + Wk,k].flatten() for k in range(n_colors)])
+    reshape_one_color = lambda x, i, j: x[i:i + Hk, j:j + Wk].flatten()
+    reshape_matrix = reshape_one_color if n_colors == 1 else reshape_multiple_color
     normalize_matrix = lambda x: np.divide(x, np.linalg.norm(x))
     pr = np.stack([normalize_matrix(reshape_matrix(img, i, j)) for i in range(Ho) for j in range(Wo)])
     fr = normalize_matrix(reshape_matrix(template_scaled, 0, 0))
@@ -211,8 +220,10 @@ def non_max_suppression(response, suppress_range, threshold=None):
             if response[i,j] < threshold:
                 response[i,j] = 0
     non_zeros_present = True
-    res = np.array(response.shape)
+    res = np.zeros(shape=(h,w))
+    count = 0
     while non_zeros_present:
+        count += 1
         maxI = -1
         maxJ = -1
         maxValue = 0
@@ -225,11 +236,11 @@ def non_max_suppression(response, suppress_range, threshold=None):
         if maxValue == 0:
             non_zeros_present = False
         else:
-            res[i,j] = response[i,j]
-            startI = max(maxI - suppress_range(0),0)
-            endI = min(maxI + suppress_range(0), h - 1)
-            startJ = max(maxJ - suppress_range(1), 0)
-            endJ = min(maxJ - suppress_range(1), h - 1)
+            res[maxI,maxJ] = response[maxI,maxJ]
+            startI = max(maxI - suppress_range[0],0)
+            endI = min(maxI + suppress_range[0], h - 1)
+            startJ = max(maxJ - suppress_range[1], 0)
+            endJ = min(maxJ + suppress_range[1], w - 1)
             for i in range(startI, endI + 1):
                 for j in range(startJ, endJ + 1):
                     response[i,j] = 0
