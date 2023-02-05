@@ -145,15 +145,14 @@ def normalized_cross_correlation_fast(img, template):
     """ Your code starts here """
     n_colors = img.shape[2]
     response = np.zeros(shape=(Ho, Wo))
-    # template_scaled = np.divide(template, np.sum(template))
-    filter_magnitude = np.sqrt(np.sum(np.square(template)))
+    template_scaled = np.divide(template, np.sum(template))
+    filter_magnitude = np.linalg.norm(template_scaled)
     
     for i in range(Ho):
         for j in range(Wo):
             input_window = img[i:i + Hk, j:j + Wk]
-            input_window_magnitude = np.sqrt(np.sum(np.square(input_window)))
-            for k in range(n_colors):
-                response[i][j] += np.sum(np.multiply(input_window[:,:,k], template[:,:,k])) / (filter_magnitude * input_window_magnitude)
+            input_window_magnitude = np.linalg.norm(input_window)
+            response[i,j] += np.sum(np.multiply(input_window[:,:,:], template_scaled[:,:,:])) / (filter_magnitude * input_window_magnitude)
     """ Your code ends here """
     return response
 
