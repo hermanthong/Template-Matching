@@ -173,8 +173,13 @@ def normalized_cross_correlation_matrix(img, template):
     Ho = Hi - Hk + 1
     Wo = Wi - Wk + 1
     """ Your code starts here """
-    pr = np.stack([np.concatenate([img[i:i + Hk, j:j + Wk,k].flatten() for k in range(img.shape[2])]) for i in range(Ho) for j in range(Wo)])
-    fr = np.concatenate([template[:,:,k].flatten() for k in range(img.shape[2])])
+    template_scaled = np.divide(template, np.sum(template))
+    reshape_matrix = lambda x, i, j: np.concatenate([x[i:i + Hk, j:j + Wk,k].flatten() for k in range(img.shape[2])])
+    normalize_matrix = lambda x: np.divide(x, np.linalg.norm(x))
+    pr = np.stack([normalize_matrix(reshape_matrix(img, i, j)) for i in range(Ho) for j in range(Wo)])
+    fr = normalize_matrix(reshape_matrix(template_scaled, 0, 0))
+    # pr = np.stack([np.concatenate([img[i:i + Hk, j:j + Wk,k].flatten() for k in range(img.shape[2])]) for i in range(Ho) for j in range(Wo)])
+    # fr = np.concatenate([template[:,:,k].flatten() for k in range(img.shape[2])])
     frt = np.atleast_2d(fr).T
     response = np.matmul(pr, frt).reshape(Ho, Wo)
     print(pr.shape)
