@@ -224,7 +224,7 @@ def non_max_suppression(response, suppress_range, threshold=None):
         if maxValue == 0:
             non_zeros_present = False
         else:
-            res[i,j] = 255
+            res[i,j] = response[i,j]
             startI = max(maxI - suppress_range(0),0)
             endI = min(maxI + suppress_range(0), h - 1)
             startJ = max(maxJ - supress_range(1), 0)
