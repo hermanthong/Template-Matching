@@ -113,12 +113,13 @@ def normalized_cross_correlation(img, template):
     n_colors = img.shape[2]
     response = np.zeros(shape=(Ho, Wo))
     template_scaled = np.divide(template, np.sum(template))
-    filter_magnitude = np.sqrt(np.sum(np.square(template_scaled)))
+    
+    filter_magnitude = np.linalg.norm(template_scaled)
     
     for i in range(Ho):
         for j in range(Wo):
             input_window = img[i:i + Hk, j:j + Wk]
-            input_window_magnitude = np.sqrt(np.sum(np.square(input_window)))
+            input_window_magnitude = np.linalg.norm(input_window)
             for ti in range(Hk):
                 for tj in range(Wk):
                     for k in range(n_colors):
