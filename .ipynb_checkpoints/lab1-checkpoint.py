@@ -152,7 +152,8 @@ def normalized_cross_correlation_fast(img, template):
         for j in range(Wo):
             input_window = img[i:i + Hk, j:j + Wk]
             input_window_magnitude = np.linalg.norm(input_window)
-            response[i,j] += np.sum(np.multiply(input_window[:,:,:], template_scaled[:,:,:])) / (filter_magnitude * input_window_magnitude)
+            for k in range(img.shape[2]):
+                response[i,j] += np.sum(np.multiply(input_window[:,:,k], template_scaled[:,:,k])) / (filter_magnitude * input_window_magnitude)
     """ Your code ends here """
     return response
 
@@ -178,13 +179,8 @@ def normalized_cross_correlation_matrix(img, template):
     normalize_matrix = lambda x: np.divide(x, np.linalg.norm(x))
     pr = np.stack([normalize_matrix(reshape_matrix(img, i, j)) for i in range(Ho) for j in range(Wo)])
     fr = normalize_matrix(reshape_matrix(template_scaled, 0, 0))
-    # pr = np.stack([np.concatenate([img[i:i + Hk, j:j + Wk,k].flatten() for k in range(img.shape[2])]) for i in range(Ho) for j in range(Wo)])
-    # fr = np.concatenate([template[:,:,k].flatten() for k in range(img.shape[2])])
     frt = np.atleast_2d(fr).T
     response = np.matmul(pr, frt).reshape(Ho, Wo)
-    print(pr.shape)
-    print(frt.shape)
-    print(response.shape)
     """ Your code ends here """
     return response
 

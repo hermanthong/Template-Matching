@@ -152,7 +152,8 @@ def normalized_cross_correlation_fast(img, template):
         for j in range(Wo):
             input_window = img[i:i + Hk, j:j + Wk]
             input_window_magnitude = np.linalg.norm(input_window)
-            response[i,j] += np.sum(np.multiply(input_window[:,:,:], template_scaled[:,:,:])) / (filter_magnitude * input_window_magnitude)
+            for k in range(img.shape[2]):
+                response[i,j] += np.sum(np.multiply(input_window[:,:,k], template_scaled[:,:,k])) / (filter_magnitude * input_window_magnitude)
     """ Your code ends here """
     return response
 
