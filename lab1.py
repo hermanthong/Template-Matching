@@ -227,7 +227,7 @@ def non_max_suppression(response, suppress_range, threshold=None):
             res[i,j] = response[i,j]
             startI = max(maxI - suppress_range(0),0)
             endI = min(maxI + suppress_range(0), h - 1)
-            startJ = max(maxJ - supress_range(1), 0)
+            startJ = max(maxJ - suppress_range(1), 0)
             endJ = min(maxJ - suppress_range(1), h - 1)
             for i in range(startI, endI + 1):
                 for j in range(startJ, endJ + 1):
