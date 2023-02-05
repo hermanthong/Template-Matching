@@ -110,7 +110,19 @@ def normalized_cross_correlation(img, template):
     Wo = Wi - Wk + 1
 
     """ Your code starts here """
-
+    n_colors = img.shape[2]
+    response = np.zeros(shape=(Ho, Wo))
+    template_scaled = np.divide(template, np.sum(template))
+    filter_magnitude = np.sqrt(np.sum(np.square(template_scaled)))
+    
+    for i in range(Ho):
+        for j in range(Wo):
+            input_window = img[i:i + Hk, j:j + Wk]
+            input_window_magnitude = np.sqrt(np.sum(np.square(input_window)))
+            for ti in range(Hk):
+                for tj in range(Wk):
+                    for k in range(n_colors):
+                        response[i][j] += input_window[ti][tj][k] * template_scaled[ti][tj][k] / (filter_magnitude * input_window_magnitude)
     """ Your code ends here """
     return response
 
@@ -130,7 +142,17 @@ def normalized_cross_correlation_fast(img, template):
     Wo = Wi - Wk + 1
 
     """ Your code starts here """
-
+    n_colors = img.shape[2]
+    response = np.zeros(shape=(Ho, Wo))
+    # template_scaled = np.divide(template, np.sum(template))
+    filter_magnitude = np.sqrt(np.sum(np.square(template)))
+    
+    for i in range(Ho):
+        for j in range(Wo):
+            input_window = img[i:i + Hk, j:j + Wk]
+            input_window_magnitude = np.sqrt(np.sum(np.square(input_window)))
+            for k in range(n_colors):
+                response[i][j] += np.sum(np.multiply(input_window[:,:,k], template[:,:,k])) / (filter_magnitude * input_window_magnitude)
     """ Your code ends here """
     return response
 
@@ -150,9 +172,14 @@ def normalized_cross_correlation_matrix(img, template):
     Hk, Wk = template.shape[:2]
     Ho = Hi - Hk + 1
     Wo = Wi - Wk + 1
-
     """ Your code starts here """
-
+    pr = np.stack([np.concatenate([img[i:i + Hk, j:j + Wk,k].flatten() for k in range(img.shape[2])]) for i in range(Ho) for j in range(Wo)])
+    fr = np.concatenate([template[:,:,k].flatten() for k in range(img.shape[2])])
+    frt = np.atleast_2d(fr).T
+    response = np.matmul(pr, frt).reshape(Ho, Wo)
+    print(pr.shape)
+    print(frt.shape)
+    print(response.shape)
     """ Your code ends here """
     return response
 
@@ -177,7 +204,35 @@ def non_max_suppression(response, suppress_range, threshold=None):
     """
     
     """ Your code starts here """
-
+    h, w = response.shape
+    for i in range(h):
+        for j in range(w):
+            if response[i,j] < threshold:
+                response[i,j] = 0
+    non_zeros_present = True
+    res = np.array(response.shape)
+    while non_zeros_present:
+        maxI = -1
+        maxJ = -1
+        maxValue = 0
+        for i in range(h):
+            for j in range(w):
+                if response[i,j] > maxValue:
+                    maxI = i
+                    maxJ = j
+                    maxValue = response[i,j]
+        if maxValue == 0:
+            non_zeros_present = False
+        else:
+            res[i,j] = 255
+            startI = max(maxI - suppress_range(0),0)
+            endI = min(maxI + suppress_range(0), h - 1)
+            startJ = max(maxJ - supress_range(1), 0)
+            endJ = min(maxJ - suppress_range(1), h - 1)
+            for i in range(startI, endI + 1):
+                for j in range(startJ, endJ + 1):
+                    response[i,j] = 0
+            
     """ Your code ends here """
     return res
 
